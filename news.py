@@ -1,35 +1,52 @@
 import network
 import urequests as requests
 import time
-import xml.etree.ElementTree as ET
 import secrets
 
 from picographics import PicoGraphics, DISPLAY_INKY_FRAME_7 as DISPLAY
 import inky_frame
 
 # wifi
+print("Starting WiFi...")
+
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
+
+print("Connecting...")
 wlan.connect(secrets.WIFI_SSID, secrets.WIFI_PASSWORD)
 
+attempts = 0
+
 while not wlan.isconnected():
-    time.sleep(0.5)
+    print("Waiting for connection...")
+    time.sleep(1)
+
+    attempts += 1
+
+    if attempts > 20:
+        print("WiFi connection failed!")
+        break
+
+print("Connected!")
+print(wlan.ifconfig())
 
 # fetch RSS
 url = "http://feeds.bbci.co.uk/news/rss.xml"
-response = response.get(url)
+response = requests.get(url)
 rss = response.text
 response.close()
 
-# parse xml
-root = ET.fromstring(rss)
-
-items = root.findall(".//item")
-
 headlines = []
-for item in items[:5]:
-    title = item.find("title").text
-    headlines.append(title)
+
+# parsing
+parts = rss.split("<item>")[1:6] # first five items
+
+for item in parts:
+    if "<title>" in item:
+        title = item.split("<title>")[1].split("</title>")[0]
+        headlines.append(title)
+
+print(headlines)
 
 # display
 graphics = PicoGraphics(DISPLAY)
