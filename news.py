@@ -21,3 +21,13 @@ response = response.get(url)
 rss = response.text
 response.close()
 
+# parse xml
+root = ET.fromstring(rss)
+
+items = root.findall(".//item")
+
+headlines = []
+for item in items[:5]:
+    title = item.find("title").text
+    headlines.append(title)
+
