@@ -6,7 +6,7 @@ from picographics import PicoGraphics, DISPLAY_INKY_FRAME_SPECTRA_7 as DISPLAY
 import inky_frame
 
 
-# --- helper functions ---
+# ---- helper functions ----
 
 def clean_cdata(text):
     if text.startswith("<![CDATA["):
@@ -48,7 +48,7 @@ def connect_wifi():
     return False
 
 
-# --- display setup ---
+# ---- display setup ----
 
 graphics = PicoGraphics(DISPLAY) # drawing canvas (DISPLAY is screen)
 WIDTH, HEIGHT = graphics.get_bounds()  # 800 x 480 for 7.3" inky frame
@@ -62,68 +62,60 @@ GREEN = graphics.create_pen(0,   128, 0)
 BLUE = graphics.create_pen(0,   0,   200)
 
 
+# ---- draw layout ----
+
+# red header bar with white BBC news title
+def draw_header():
+    graphics.set_pen(RED)
+    graphics.rectangle(0, 0, WIDTH, 60)
+    graphics.set_pen(WHITE)
+    graphics.text("BBC News", 20, 10, WIDTH, 4)
+    # small category label, yellow pill on right side of header
+    graphics.set_pen(YELLOW)
+    graphics.rectangle(WIDTH - 130, 12, 110, 36)
+    graphics.set_pen(BLACK)
+    graphics.text("Top Stories", WIDTH - 126, 18, 130, 2)
+
+# thin dark footer bar
+def draw_footer():
+    graphics.set_pen(BLACK)
+    graphics.rectangle(0, HEIGHT - 30, WIDTH, 30)
+    graphics.set_pen(WHITE)
+    graphics.text("feeds.bbci.co.uk  |  Inky Frame", 20, HEIGHT - 22, WIDTH, 1)
+
+# draw each headline with alternating row shading and a description
+def draw_headlines(headlines):
+    y = 70  # start below header
+    row_height = 76  # space for title + description + padding
+
+    for i, (title, desc) in enumerate(headlines):
+        # alternating row background
+        if i % 2 == 0:
+            graphics.set_pen(WHITE)
+        else:
+            # very light effect 
+            graphics.set_pen(YELLOW)
+        graphics.rectangle(0, y, WIDTH, row_height)
+
+        # coloured bullet/index number on left
+        graphics.set_pen(RED)
+        graphics.rectangle(0, y + 8, 6, row_height - 16)  # left accent bar
+        graphics.set_pen(BLACK)
+        graphics.text(str(i + 1), 14, y + 10, 30, 3)
+
+        # headline title (scale 2)
+        graphics.set_pen(BLACK)
+        graphics.text(title, 50, y + 8, WIDTH - 60, 2)
+
+        # description (scale 1)
+        graphics.set_pen(BLACK)
+        graphics.text(desc, 50, y + 44, WIDTH - 60, 1)
+
+        y += row_height
 
 
 
 
 
-print("Starting WiFi...")
 
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-
-print("Connecting...")
-wlan.connect(secrets.WIFI_SSID, secrets.WIFI_PASSWORD)
-
-attempts = 0
-
-while not wlan.isconnected():
-    print("Waiting for connection...")
-    time.sleep(1)
-
-    attempts += 1
-
-    if attempts > 20:
-        print("WiFi connection failed!")
-        break
-
-print("Connected!")
-print(wlan.ifconfig())
-
-# fetch RSS
-url = "http://feeds.bbci.co.uk/news/rss.xml"
-response = requests.get(url)
-rss = response.text
-response.close()
-
-headlines = []
-
-# parsing
-parts = rss.split("<item>")[1:6] # first five items
-
-for item in parts:
-    if "<title>" in item:
-        title = item.split("<title>")[1].split("</title>")[0]
-        headlines.append(title)
-
-print(headlines)
-
-# display
-graphics = PicoGraphics(DISPLAY)
-
-graphics.set_pen(inky_frame.WHITE)
-graphics.clear()
-
-graphics.set_pen(inky_frame.RED)
-
-graphics.text("BBC News", 20, 20, 600, 4)
-
-graphics.set_pen(inky_frame.BLACK)
-
-y = 70
-for h in headlines:
-    graphics.text("- " + h, 20, y, 600, 2)
-    y += 40
-
-graphics.update()
 
