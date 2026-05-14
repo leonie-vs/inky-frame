@@ -5,6 +5,7 @@ import secrets
 from picographics import PicoGraphics, DISPLAY_INKY_FRAME_SPECTRA_7 as DISPLAY
 import inky_frame
 
+
 # --- helper functions ---
 
 def clean_cdata(text):
@@ -46,7 +47,26 @@ def connect_wifi():
     print("WiFi failed")
     return False
 
-# --- wifi connection ---
+
+# --- display setup ---
+
+graphics = PicoGraphics(DISPLAY) # drawing canvas (DISPLAY is screen)
+WIDTH, HEIGHT = graphics.get_bounds()  # 800 x 480 for 7.3" inky frame
+
+# pen colours
+WHITE = graphics.create_pen(255, 255, 255)
+BLACK = graphics.create_pen(0,   0,   0)
+RED = graphics.create_pen(255, 0,   0)
+YELLOW = graphics.create_pen(220, 180, 0)
+GREEN = graphics.create_pen(0,   128, 0)
+BLUE = graphics.create_pen(0,   0,   200)
+
+
+
+
+
+
+
 print("Starting WiFi...")
 
 wlan = network.WLAN(network.STA_IF)
